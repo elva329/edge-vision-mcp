@@ -3,8 +3,8 @@ import CameraGrid from './components/CameraGrid.jsx';
 import AlertPanel from './components/AlertPanel.jsx';
 import MetricsBar from './components/MetricsBar.jsx';
 
-const GATEWAY_URL = 'http://192.168.1.10:9000';
-const WS_URL = 'ws://192.168.1.10:8080/ws';
+const GATEWAY_URL = '/rpc';
+const WS_URL = `ws://${window.location.host}/ws`;
 
 const CAMERAS = Array.from({ length: 16 }, (_, i) => `cam_${i.toString().padStart(2, '0')}`);
 

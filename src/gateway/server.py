@@ -158,7 +158,7 @@ class MCPGateway:
                         await self._send_error(writer, None, -32700, "Parse error")
                         continue
 
-                    response = await self._process_request(request, session)
+                    response = await self.process_request(request, session)
                     if response:
                         await self._send_response(writer, response)
 
@@ -174,7 +174,7 @@ class MCPGateway:
             await writer.wait_closed()
             logger.info(f"Connection closed: {peer}")
 
-    async def _process_request(self, request: Dict[str, Any], session: Optional[Session]) -> Optional[MCPResponse]:
+    async def process_request(self, request: Dict[str, Any], session: Optional[Session]) -> Optional[MCPResponse]:
         method = request.get("method", "")
         req_id = request.get("id")
         params = request.get("params", {})
