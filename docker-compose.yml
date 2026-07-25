@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  edge-vision-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edge-vision-mcp
+    ports:
+      - "9000:9000"
+      - "8080:8080"
+    environment:
+      - GATEWAY_HOST=0.0.0.0
+      - GATEWAY_PORT=9000
+      - AGUI_PORT=8080
+      - AGUI_ENABLED=true
+    volumes:
+      - ./configs:/etc/edge-vision:ro
+      - ./logs:/var/log/edge-vision
+    restart: unless-stopped
+    networks:
+      - edge-lan
+
+  testing-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edge-vision-tester
+    depends_on:
+      - edge-vision-mcp
+    environment:
+      - GATEWAY_HOST=edge-vision-mcp
+      - GATEWAY_PORT=9000
+      - GATEWAY_LAN=192.168.1.0/24
+    command: ["python3", "src/testing/testing_agent.py", "--host", "edge-vision-mcp", "--output", "/reports/report.json"]
+    volumes:
+      - ./reports:/reports
+    networks:
+      - edge-lan
+    restart: "no"
+
+networks:
+  edge-lan:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24

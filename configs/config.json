@@ -1,0 +1,52 @@
+{
+  "gateway": {
+    "host": "0.0.0.0",
+    "port": 9000,
+    "max_clients": 10,
+    "rate_limit_per_minute": 1000
+  },
+  "stream_server": {
+    "num_cameras": 16,
+    "resolution": "640x480",
+    "fps_per_camera": 10,
+    "fps_global_cap": 120,
+    "jpeg_quality": 50,
+    "buffer_frames_per_camera": 5
+  },
+  "inference_server": {
+    "queue_max_size": 32,
+    "mock_latency_ms_min": 10,
+    "mock_latency_ms_max": 50,
+    "max_batch_size": 16,
+    "max_image_size_bytes": 10485760
+  },
+  "rule_engine": {
+    "alert_ttl_seconds": 300,
+    "max_alerts": 100
+  },
+  "agui": {
+    "host": "0.0.0.0",
+    "port": 8080,
+    "enabled": true
+  },
+  "network": {
+    "lan_subnet": "192.168.1.0/24",
+    "discovery_broadcast": "192.168.1.255:9001",
+    "testing_agent_port": 9000
+  },
+  "protocol": {
+    "default_version": "2026",
+    "session_ttl_seconds": 3600
+  },
+  "resources": {
+    "max_memory_mb": 4096,
+    "max_cpu_percent": 80,
+    "edge_device": {
+      "cpu_cores": 4,
+      "tpu": true,
+      "ram_gb": 4,
+      "hdmi": true,
+      "usb": true
+    }
+  }
+}
