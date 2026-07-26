@@ -1,3 +1,12 @@
+# Stage 1: Build frontend
+FROM node:20-slim AS frontend-builder
+WORKDIR /app/src/agui
+COPY src/agui/package*.json ./
+RUN npm ci
+COPY src/agui/. ./
+RUN npm run build
+
+# Stage 2: Production runtime
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -5,9 +14,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY main.py .
+COPY src/ ./src/
 
-RUN pip install --no-cache-dir -e src/agui/ 2>/dev/null || true
+COPY --from=frontend-builder /app/src/agui/dist ./src/agui/dist
 
 EXPOSE 9000 8080
 

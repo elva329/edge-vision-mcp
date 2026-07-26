@@ -4,7 +4,7 @@ import AlertPanel from './components/AlertPanel.jsx';
 import MetricsBar from './components/MetricsBar.jsx';
 
 const GATEWAY_URL = '/rpc';
-const WS_URL = `ws://${window.location.host}/ws`;
+const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
 
 const CAMERAS = Array.from({ length: 16 }, (_, i) => `cam_${i.toString().padStart(2, '0')}`);
 
