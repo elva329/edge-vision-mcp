@@ -52,11 +52,74 @@ Then open http://localhost:8080.
 
 Edit `src/agui/src/App.jsx` to change `CAMERAS` count or polling interval. The backend hosts the frontend at `/` on port 8080 and exposes MCP tools over TCP on port 9000.
 
+## Demo
+
+Quick 3–5 minute demo for interviews or reviews.
+
+### Terminal 1 — start backend
+```bash
+python3 main.py
+```
+
+### Terminal 2 — start frontend (auto-reload)
+```bash
+cd src/agui && npm run dev
+```
+
+### Open browser
+- **Development**: http://localhost:5173
+- **Production build**: http://localhost:8080
+
+### Verify with curl
+```bash
+# List cameras
+curl -s -X POST http://localhost:8080/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_cameras"}}' | python3 -m json.tool
+
+# Get frame from camera 0
+curl -s -X POST http://localhost:8080/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"get_stream_frame","arguments":{"camera_id":"cam_00"}}}' | python3 -m json.tool
+
+# Run inference
+curl -s -X POST http://localhost:8080/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"run_inference","arguments":{"image_data":"test"}}}' | python3 -m json.tool
+
+# Protocol info
+curl -s -X POST http://localhost:8080/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"get_protocol_info"}}' | python3 -m json.tool
+```
+
+### What to show
+1. **Dashboard**: 4×4 camera grid, live alerts, CPU/TPU/RAM metrics
+2. **Config tab**: camera toggles, rule creation, model list, protocol info
+3. **WebSocket**: real-time `metrics`, `alert`, `frame_update` events in browser console
+4. **Testing agent**: run `python3 src/testing/testing_agent.py --host 127.0.0.1` and show JSON report
+
 ## Testing
 
+### pytest suites
 ```bash
-make test
+# Install test dependency
+pip install pytest-asyncio==0.23.7
+
+# Run all tests
+PYTHONPATH=/Users/Elva/Desktop/Job\ Application/Novos/edge-vision-mcp pytest tests/ -v
 ```
+
+### Testing agent (LAN)
+```bash
+# From another device or same host
+python3 src/testing/testing_agent.py --host 127.0.0.1 --port 9000 --output /tmp/test-report.json
+cat /tmp/test-report.json | python3 -m json.tool
+```
+
+Environment variables:
+- `GATEWAY_HOST` — Edge device IP (default `192.168.1.10`)
+- `OUTPUT` — Report file path (default `test-report.json`)
 
 ## Project Structure
 
@@ -137,18 +200,6 @@ sudo cp scripts/edge-vision-mcp.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now edge-vision-mcp
 ```
-
-## Testing Agent
-
-The testing agent discovers the gateway via UDP broadcast and runs tests from another device on the same LAN:
-
-```bash
-bash scripts/run_tester.sh
-```
-
-Environment variables:
-- `GATEWAY_HOST` — Edge device IP (default `192.168.1.10`)
-- `OUTPUT` — Report file path (default `test-report.json`)
 
 ## Troubleshooting
 
