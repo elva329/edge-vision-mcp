@@ -86,6 +86,20 @@ docker build -t edge-vision-mcp .
 docker run -p 9000:9000 -p 8080:8080 edge-vision-mcp
 ```
 
+### Deploy with Docker Desktop (GUI)
+
+1. Open Docker Desktop
+2. Build the image:
+   - Go to **Images** → **Build**
+   - Path: select this project folder
+   - Image name: `edge-vision-mcp`
+3. Run the container:
+   - Go to **Containers** → **Run**
+   - Image: `edge-vision-mcp`
+   - Map ports: `8080` and `9000`
+   - Command: `python3 main.py --host 0.0.0.0 --port 9000`
+4. Open `http://localhost:8080`
+
 ### Ports
 
 | Port | Service |
