@@ -81,7 +81,7 @@ export default function ConfigView({ cameras, onRefresh }) {
               <div key={cam.id} className={`camera-chip ${cam.status}`}>
                 <span className="chip-id">{cam.id}</span>
                 <span className="chip-status">{cam.status}</span>
-                <button className="chip-btn" onClick={() => toggleCamera(cam.id, cam.status)}>
+                <button className={`chip-btn ${cam.status === 'live' ? 'stop-btn' : 'start-btn'}`} onClick={() => toggleCamera(cam.id, cam.status)}>
                   {cam.status === 'live' ? 'Stop' : 'Start'}
                 </button>
               </div>
