@@ -102,6 +102,16 @@ export default function App() {
     } catch {}
   }, []);
 
+  const handleToggleCamera = useCallback(async (cameraId, currentStatus) => {
+    const action = currentStatus === 'live' ? 'stop_stream' : 'start_stream';
+    try {
+      await mcpCall('tools/call', { name: action, arguments: { camera_id: cameraId } });
+      await loadCameras();
+    } catch (e) {
+      alert('Failed to toggle camera: ' + e.message);
+    }
+  }, [loadCameras]);
+
   return (
     <div className="app">
       <header className="header">
@@ -123,7 +133,7 @@ export default function App() {
       <main className="main">
         {view === 'dashboard' ? (
           <>
-            <CameraGrid cameras={cameras} onClip={handleClip} />
+            <CameraGrid cameras={cameras} onClip={handleClip} onToggle={handleToggleCamera} />
             <aside className="sidebar">
               <AlertPanel alerts={alerts} onAck={handleAck} onClip={handleClip} />
               <MetricsBar metrics={metrics} />

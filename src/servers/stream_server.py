@@ -199,12 +199,14 @@ class StreamServer:
         if camera_id not in self.cameras:
             raise ValueError(f"Camera not found: {camera_id}")
         self.streaming[camera_id] = True
+        self.cameras[camera_id]["status"] = "live"
         return {"camera_id": camera_id, "status": "streaming"}
 
     async def _stop_stream(self, camera_id: str) -> Dict[str, Any]:
         if camera_id not in self.cameras:
             raise ValueError(f"Camera not found: {camera_id}")
         self.streaming[camera_id] = False
+        self.cameras[camera_id]["status"] = "off"
         return {"camera_id": camera_id, "status": "stopped"}
 
     async def _get_stream_health(self, camera_id: str) -> Dict[str, Any]:
