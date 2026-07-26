@@ -10,6 +10,7 @@ import logging
 import argparse
 import os
 import random
+import socket
 import uuid
 from datetime import datetime
 from aiohttp import web
@@ -58,6 +59,28 @@ class UDPDiscovery:
         self.port = port
         self.response_port = response_port
         self._transport = None
+        self._advertise_ip = self._resolve_lan_ip()
+
+    def _resolve_lan_ip(self) -> str:
+        if self.host != "0.0.0.0":
+            return self.host
+        try:
+            hostname = socket.gethostname()
+            ip = socket.gethostbyname(hostname)
+            if ip and not ip.startswith("127."):
+                return ip
+        except Exception:
+            pass
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.connect(("192.168.1.255", 1))
+            ip = sock.getsockname()[0]
+            sock.close()
+            if ip and not ip.startswith("127."):
+                return ip
+        except Exception:
+            pass
+        return "127.0.0.1"
 
     async def start(self):
         loop = asyncio.get_event_loop()
@@ -65,7 +88,7 @@ class UDPDiscovery:
             lambda: self,
             local_addr=(self.host, self.port),
         )
-        logger.info(f"UDP discovery listening on {self.host}:{self.port}")
+        logger.info(f"UDP discovery listening on {self.host}:{self.port}, advertising {self._advertise_ip}")
 
     def connection_made(self, transport):
         self._transport = transport
@@ -76,7 +99,7 @@ class UDPDiscovery:
             if msg.get("type") == "discover" and msg.get("service") == "edge-vision-gateway":
                 response = {
                     "type": "edge-vision-gateway",
-                    "host": addr[0],
+                    "host": self._advertise_ip,
                     "port": self.response_port,
                     "protocol": "mcp",
                     "versions": ["2025-11", "2026"],
