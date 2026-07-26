@@ -276,3 +276,4 @@ body {
 }
 .compact-form button { flex-shrink: 0; padding: 0.4rem 0.9rem; background: var(--accent); color: var(--bg); border: none; border-radius: 0.3rem; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
 .compact-form button:hover { opacity: 0.9; }
+.compact-form .zone-input { flex: 2; min-width: 180px; }

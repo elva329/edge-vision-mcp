@@ -153,7 +153,7 @@ export default function ConfigView({ cameras, onRefresh }) {
               <option value="loitering">Loitering</option>
               <option value="object_left">Object Left</option>
             </select>
-            <input placeholder='Zone [[x,y],...]' value={newRule.zone} onChange={(e) => setNewRule({ ...newRule, zone: e.target.value })} />
+            <input className="zone-input" placeholder='Zone [[x,y],...]' value={newRule.zone} onChange={(e) => setNewRule({ ...newRule, zone: e.target.value })} />
             <input type="number" placeholder="Threshold (s)" value={newRule.threshold_seconds} onChange={(e) => setNewRule({ ...newRule, threshold_seconds: e.target.value })} />
             <button type="submit">Create</button>
           </form>
