@@ -44,7 +44,7 @@ export default function App() {
     if (msg.type === 'frame_update') {
       setCameras((prev) => {
         const next = new Map(prev);
-        next.set(msg.camera_id, { status: 'live', frame: msg });
+        next.set(msg.camera_id, { id: msg.camera_id, status: 'live', frame: msg });
         return next;
       });
     }
@@ -61,7 +61,7 @@ export default function App() {
   useEffect(() => {
     mcpCall('tools/call', { name: 'list_cameras' }).then((cams) => {
       const map = new Map();
-      (cams || []).forEach((c) => map.set(c.id, { status: c.status, frame: null }));
+      (cams || []).forEach((c) => map.set(c.id, { id: c.id, status: c.status, frame: null }));
       setCameras(map);
     }).catch(() => {});
 
@@ -71,7 +71,7 @@ export default function App() {
         mcpCall('tools/call', { name: 'get_stream_frame', arguments: { camera_id: id } }).then((frame) => {
           setCameras((prev) => {
             const next = new Map(prev);
-            next.set(id, { status: 'live', frame });
+            next.set(id, { id, status: 'live', frame });
             return next;
           });
         }).catch(() => {});
