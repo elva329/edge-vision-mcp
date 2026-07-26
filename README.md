@@ -95,11 +95,11 @@ cd src/agui && npm run dev
 
 | Section | Action | Steps | Expected result |
 |---------|--------|-------|-----------------|
-| **Cameras** | Stop a camera | Click **Stop** on `cam_00` | Camera chip turns gray (`off`); Dashboard stops receiving frames for `cam_00` |
-| **Cameras** | Start a camera | Click **Start** on a stopped camera | Camera chip turns cyan (`live`); Dashboard resumes frames for that camera |
-| **Rules** | Create a `zone_crossing` rule | Fill form → Name: `test_rule`, Camera: `cam_00`, Type: `zone_crossing`, Zone: `[[100,100],[300,100],[300,300],[100,300]]`, Threshold: `10` → **Create** | Rule appears in the Rules list as `On`; Alert panel may show alerts when inference detects objects in that zone |
-| **Rule Server** | Create a `loitering` rule | Type: `loitering`, Camera: `cam_01`, Threshold: `5` → **Create** | Rule appears; if an object stays in zone > 5s, a loitering alert is emitted |
-| **Rule Server** | Create an `object_left` rule | Type: `object_left`, Camera: `cam_02` → **Create** | Rule appears; alerts when an object is left behind without a person |
+| **Cameras** | Stop a camera | Click **Stop** on `cam_00` | Camera chip turns gray (`off`) within 1 second; Dashboard stops showing frames for `cam_00` |
+| **Cameras** | Start a camera | Click **Start** on a stopped camera | Camera chip turns cyan (`live`) within 1 second; Dashboard resumes frames for that camera |
+| **Rules** | Create a `zone_crossing` rule | Fill form → Name: `test_rule`, Camera: `cam_00`, Type: `zone_crossing`, Zone: `[[100,100],[300,100],[300,300],[100,300]]`, Threshold: `10` → **Create** | Rule appears in the Rules list as `On`; Alert panel may show alerts when the rule engine evaluates mock inference for that camera |
+| **Rule Server** | Create a `loitering` rule | Type: `loitering`, Camera: `cam_01`, Threshold: `5` → **Create** | Rule appears; if a mock object stays in zone for > 5s during evaluation, a loitering alert is emitted |
+| **Rule Server** | Create an `object_left` rule | Type: `object_left`, Camera: `cam_02` → **Create** | Rule appears; alerts when a mock person is detected without a car present |
 | **Models** | View model list | Look at the Models card | Shows `mobilenet_v2_edge` and `yolo_nas_edge` with mocked latency ranges |
 | **Protocol** | View protocol info | Look at the Protocol card | Shows supported versions `2025-11, 2026`, default `2026`, session-based `Yes`, stateless `Yes` |
 | **Protocol info** | No direct edit | Read-only | Confirms gateway is ready for both legacy (`2025-11`) and modern (`2026`) MCP clients |

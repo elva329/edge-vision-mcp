@@ -40,6 +40,15 @@ export default function App() {
   const [connected, setConnected] = useState(false);
   const [view, setView] = useState('dashboard');
 
+  const loadCameras = useCallback(async () => {
+    try {
+      const cams = await mcpCall('tools/call', { name: 'list_cameras' });
+      const map = new Map();
+      (cams || []).forEach((c) => map.set(c.id, { id: c.id, status: c.status, frame: null }));
+      setCameras(map);
+    } catch {}
+  }, []);
+
   const handleWsMessage = useCallback((msg) => {
     if (msg.type === 'frame_update') {
       setCameras((prev) => {
@@ -59,13 +68,10 @@ export default function App() {
   useWebSocket(handleWsMessage);
 
   useEffect(() => {
-    mcpCall('tools/call', { name: 'list_cameras' }).then((cams) => {
-      const map = new Map();
-      (cams || []).forEach((c) => map.set(c.id, { id: c.id, status: c.status, frame: null }));
-      setCameras(map);
-    }).catch(() => {});
+    loadCameras();
 
     const iv = setInterval(() => {
+      loadCameras();
       mcpCall('tools/call', { name: 'get_system_metrics' }).then(setMetrics).catch(() => {});
       CAMERAS.forEach((id) => {
         mcpCall('tools/call', { name: 'get_stream_frame', arguments: { camera_id: id } }).then((frame) => {
@@ -80,7 +86,7 @@ export default function App() {
 
     setConnected(true);
     return () => clearInterval(iv);
-  }, []);
+  }, [loadCameras]);
 
   const handleAck = useCallback(async (alertId) => {
     try {
@@ -124,7 +130,7 @@ export default function App() {
             </aside>
           </>
         ) : (
-          <ConfigView cameras={cameras} onRefresh={() => setConnected((c) => !c)} />
+          <ConfigView cameras={cameras} onRefresh={loadCameras} />
         )}
       </main>
     </div>

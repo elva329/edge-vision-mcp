@@ -114,7 +114,7 @@ class UDPDiscovery:
             self._transport.close()
 
 
-async def start_agui(gateway, stream_server=None):
+async def start_agui(gateway, stream_server=None, rule_engine=None):
     app = web.Application()
 
     async def handle_index(request):
@@ -159,14 +159,37 @@ async def start_agui(gateway, stream_server=None):
 
                     if random.random() < 0.3:
                         try:
-                            alert = {
-                                "type": "alert",
-                                "alert_id": str(uuid.uuid4()),
-                                "camera_id": f"cam_{random.randint(0, 15):02d}",
-                                "rule_name": random.choice(["zone_crossing", "object_left"]),
-                                "timestamp": datetime.utcnow().isoformat() + "Z",
-                            }
-                            await ws.send_json(alert)
+                            cam_id = f"cam_{random.randint(0, 15):02d}"
+                            alerted = False
+                            if rule_engine:
+                                inference = {
+                                    "boxes": [
+                                        {"x": 15, "y": 25, "w": 120, "h": 220, "label": "person", "confidence": 0.85},
+                                        {"x": 200, "y": 80, "w": 80, "h": 160, "label": "car", "confidence": 0.9},
+                                    ],
+                                    "model_id": "mobilenet_v2_edge",
+                                    "inference_time_ms": 25,
+                                }
+                                result = await rule_engine.evaluate(cam_id, inference)
+                                alerts = result.get("alerts", [])
+                                if alerts:
+                                    alert = alerts[0]
+                                    await ws.send_json({
+                                        "type": "alert",
+                                        "alert_id": str(uuid.uuid4()),
+                                        "camera_id": cam_id,
+                                        "rule_name": alert.rule_name,
+                                        "timestamp": datetime.utcnow().isoformat() + "Z",
+                                    })
+                                    alerted = True
+                            if not alerted:
+                                await ws.send_json({
+                                    "type": "alert",
+                                    "alert_id": str(uuid.uuid4()),
+                                    "camera_id": cam_id,
+                                    "rule_name": random.choice(["zone_crossing", "object_left"]),
+                                    "timestamp": datetime.utcnow().isoformat() + "Z",
+                                })
                         except Exception:
                             pass
 
@@ -239,7 +262,7 @@ async def run_gateway(host="0.0.0.0", port=9000, serve_agui=True):
 
     agui_runner = None
     if serve_agui:
-        agui_runner = await start_agui(gateway, stream_server=stream_server)
+        agui_runner = await start_agui(gateway, stream_server=stream_server, rule_engine=rule_engine)
 
     try:
         await asyncio.Future()
