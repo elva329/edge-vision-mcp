@@ -70,6 +70,40 @@ cd src/agui && npm run dev
 - **Development**: http://localhost:5173
 - **Production build**: http://localhost:8080
 
+### Demo flow
+
+1. **Dashboard**
+   - Open browser to the dev/prod URL
+   - Show the **4×4 camera grid** with live snapshots updating every second
+   - Point out **live alert panel** on the right — alerts appear automatically (`zone_crossing`, `object_left`)
+   - Show **metrics bar** (CPU / TPU / RAM / Protocol)
+
+2. **Config tab**
+   - Click **Config** in the top nav
+   - Walk through each card and make live changes (see table below)
+   - Switch back to **Dashboard** to show the impact of those changes
+
+3. **WebSocket events**
+   - Open browser DevTools → Console → Network → WS
+   - Show real-time frames: `frame_update`, alerts: `alert`, metrics: `metrics`
+
+4. **Testing agent**
+   - Run `python3 src/testing/testing_agent.py --host 127.0.0.1 --port 9000 --output /tmp/test-report.json`
+   - Show JSON pass/fail report
+
+### Config tab: actions and expected results
+
+| Section | Action | Steps | Expected result |
+|---------|--------|-------|-----------------|
+| **Cameras** | Stop a camera | Click **Stop** on `cam_00` | Camera chip turns gray (`off`); Dashboard stops receiving frames for `cam_00` |
+| **Cameras** | Start a camera | Click **Start** on a stopped camera | Camera chip turns cyan (`live`); Dashboard resumes frames for that camera |
+| **Rules** | Create a `zone_crossing` rule | Fill form → Name: `test_rule`, Camera: `cam_00`, Type: `zone_crossing`, Zone: `[[100,100],[300,100],[300,300],[100,300]]`, Threshold: `10` → **Create** | Rule appears in the Rules list as `On`; Alert panel may show alerts when inference detects objects in that zone |
+| **Rule Server** | Create a `loitering` rule | Type: `loitering`, Camera: `cam_01`, Threshold: `5` → **Create** | Rule appears; if an object stays in zone > 5s, a loitering alert is emitted |
+| **Rule Server** | Create an `object_left` rule | Type: `object_left`, Camera: `cam_02` → **Create** | Rule appears; alerts when an object is left behind without a person |
+| **Models** | View model list | Look at the Models card | Shows `mobilenet_v2_edge` and `yolo_nas_edge` with mocked latency ranges |
+| **Protocol** | View protocol info | Look at the Protocol card | Shows supported versions `2025-11, 2026`, default `2026`, session-based `Yes`, stateless `Yes` |
+| **Protocol info** | No direct edit | Read-only | Confirms gateway is ready for both legacy (`2025-11`) and modern (`2026`) MCP clients |
+
 ### Verify with curl
 ```bash
 # List cameras
@@ -92,12 +126,6 @@ curl -s -X POST http://localhost:8080/rpc \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"get_protocol_info"}}' | python3 -m json.tool
 ```
-
-### What to show
-1. **Dashboard**: 4×4 camera grid, live alerts, CPU/TPU/RAM metrics
-2. **Config tab**: camera toggles, rule creation, model list, protocol info
-3. **WebSocket**: real-time `metrics`, `alert`, `frame_update` events in browser console
-4. **Testing agent**: run `python3 src/testing/testing_agent.py --host 127.0.0.1` and show JSON report
 
 ## Testing
 
