@@ -20,6 +20,20 @@ cd src/agui && npm install && cd ../..
 
 ## Running
 
+### Development (with hot reload)
+
+```bash
+# Terminal 1 — start backend
+python3 main.py
+
+# Terminal 2 — start frontend dev server with HMR
+cd src/agui && npm run dev
+```
+
+Then open **http://localhost:5173**. The Vite dev server proxies API (`/rpc`) and WebSocket (`/ws`) requests to the backend on port 9000. UI changes reload automatically; no hard refresh needed.
+
+### Production
+
 ```bash
 # Build frontend, then start backend (serves API on :9000 + frontend on :8080)
 cd src/agui && npm run build && cd ../..

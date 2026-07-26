@@ -5,7 +5,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0',
-    port: 8080,
+    port: 5173,
+    proxy: {
+      '/rpc': 'http://localhost:9000',
+      '/ws': {
+        target: 'ws://localhost:9000',
+        ws: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',
