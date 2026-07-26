@@ -101,7 +101,7 @@ class TestingAgent:
 
         loop = asyncio.get_event_loop()
         transport, proto = await loop.create_datagram_endpoint(
-            DiscoveryProtocol, local_addr=("0.0.0.0", 9001)
+            DiscoveryProtocol, local_addr=("0.0.0.0", 0)
         )
         try:
             transport.sendto(
