@@ -151,7 +151,7 @@ body {
     cursor: pointer;
 }
 .clip-btn:hover { background: var(--danger); }
-.tile-toggle {
+.tile-start-btn {
     position: absolute;
     top: 0.35rem;
     left: 0.35rem;
@@ -162,13 +162,11 @@ body {
     font-weight: 700;
     cursor: pointer;
     color: white;
+    background: var(--success);
     transition: background 0.2s;
     z-index: 2;
 }
-.tile-toggle-start { background: var(--success); }
-.tile-toggle-start:hover { background: #16a34a; }
-.tile-toggle-stop { background: var(--danger); }
-.tile-toggle-stop:hover { background: #dc2626; }
+.tile-start-btn:hover { background: #16a34a; }
 
 .sidebar {
     width: 320px;

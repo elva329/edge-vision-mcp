@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function CameraTile({ cameraId, status, frame, onClip, onToggle }) {
+export default function CameraTile({ cameraId, status, frame, onClip, onStart }) {
   const imgSrc = frame && frame.data ? `data:image/jpeg;base64,${frame.data}` : null;
   return (
     <div className={`camera-tile ${status === 'live' ? 'live' : 'off'}`}>
@@ -15,11 +15,10 @@ export default function CameraTile({ cameraId, status, frame, onClip, onToggle }
         <span className="tile-id">{cameraId}</span>
         <span className={`tile-status ${status}`}>{status.toUpperCase()}</span>
       </div>
-      <button className={`tile-toggle ${status === 'live' ? 'tile-toggle-stop' : 'tile-toggle-start'}`} onClick={() => onToggle && onToggle(cameraId, status)}>
-        {status === 'live' ? 'Stop' : 'Start'}
-      </button>
-      {status === 'live' && (
-        <button className="clip-btn" onClick={() => onClip(cameraId)}>CLIP</button>
+      {status === 'live' ? (
+        <button className="clip-btn" onClick={() => onClip && onClip(cameraId)}>CLIP</button>
+      ) : (
+        <button className="tile-start-btn" onClick={() => onStart && onStart(cameraId)}>Start</button>
       )}
     </div>
   );
