@@ -30,7 +30,7 @@ python3 main.py
 cd src/agui && npm run dev
 ```
 
-Then open **http://localhost:5173**. The Vite dev server proxies API (`/rpc`) and WebSocket (`/ws`) requests to the backend on port 9000. UI changes reload automatically; no hard refresh needed.
+Then open **http://localhost:5173**. The Vite dev server proxies API (`/rpc`) and WebSocket (`/ws`) requests to the backend on port 8080. UI changes reload automatically; no hard refresh needed.
 
 ### Production
 
