@@ -270,9 +270,9 @@ body {
 .proto-value { font-size: 0.85rem; flex: 1; }
 
 .form-section { min-height: 0; grid-column: span 2; }
-.compact-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-top: 0.5rem; }
+.compact-form { display: flex; flex-wrap: nowrap; gap: 0.35rem; margin-top: 0.5rem; }
 .compact-form input, .compact-form select {
-  background: var(--surface-2); color: var(--text); border: 1px solid var(--surface-2); border-radius: 0.3rem; padding: 0.4rem; font-size: 0.8rem;
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--surface-2); border-radius: 0.3rem; padding: 0.35rem; font-size: 0.75rem; min-width: 0; flex-shrink: 1;
 }
-.compact-form button { grid-column: span 1; justify-self: end; padding: 0.6rem 0.8rem; background: var(--accent); color: var(--bg); border: none; border-radius: 0.3rem; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
+.compact-form button { flex-shrink: 0; padding: 0.4rem 0.9rem; background: var(--accent); color: var(--bg); border: none; border-radius: 0.3rem; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
 .compact-form button:hover { opacity: 0.9; }
