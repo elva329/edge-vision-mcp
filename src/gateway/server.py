@@ -50,6 +50,25 @@ class MCPResponse:
 # Session Manager
 # ---------------------------------------------------------------------------
 
+class RateLimiter:
+    def __init__(self, max_requests: int = 1000, window_seconds: int = 60):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self._clients: Dict[str, list] = {}
+        self._lock = asyncio.Lock()
+
+    async def check(self, client_id: str) -> bool:
+        now = time.time()
+        async with self._lock:
+            timestamps = self._clients.get(client_id, [])
+            timestamps = [t for t in timestamps if now - t < self.window_seconds]
+            if len(timestamps) >= self.max_requests:
+                return False
+            timestamps.append(now)
+            self._clients[client_id] = timestamps
+            return True
+
+
 class SessionManager:
     def __init__(self, session_ttl: int = 3600):
         self.sessions: Dict[str, Session] = {}
@@ -118,11 +137,12 @@ class ToolRegistry:
 # ---------------------------------------------------------------------------
 
 class MCPGateway:
-    def __init__(self, host: str = "0.0.0.0", port: int = 9000):
+    def __init__(self, host: str = "0.0.0.0", port: int = 9000, rate_limit: int = 1000):
         self.host = host
         self.port = port
         self.sessions = SessionManager()
         self.registry = ToolRegistry()
+        self.rate_limiter = RateLimiter(max_requests=rate_limit)
         self.sessions_lock = asyncio.Lock()
         self._setup_tools()
 
@@ -135,6 +155,7 @@ class MCPGateway:
 
     async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         peer = writer.get_extra_info("peername")
+        client_id = f"{peer[0]}:{peer[1]}"
         logger.info(f"New connection from {peer}")
         session: Optional[Session] = None
         buffer = b""
@@ -146,11 +167,13 @@ class MCPGateway:
                     break
                 buffer += data
 
-                # Process all complete JSON objects in buffer
                 while b"\n" in buffer:
                     line, buffer = buffer.split(b"\n", 1)
                     line = line.strip()
                     if not line:
+                        continue
+                    if not await self.rate_limiter.check(client_id):
+                        await self._send_error(writer, None, -32000, "Rate limit exceeded")
                         continue
                     try:
                         request = json.loads(line)
@@ -162,7 +185,6 @@ class MCPGateway:
                     if response:
                         await self._send_response(writer, response)
 
-                    # Update session after processing
                     if session and response and response.result is not None:
                         async with self.sessions_lock:
                             session.last_active = datetime.utcnow()

@@ -47,10 +47,11 @@ make test
 ## Project Structure
 
 - `main.py` — Entry point; starts MCP Gateway and aiohttp frontend server
-- `src/gateway/server.py` — JSON-RPC 2.0 TCP gateway with session management
-- `src/servers/` — Stream, Inference, and Rule MCP servers
-- `src/agui/` — React frontend (Vite)
+- `src/gateway/server.py` — JSON-RPC 2.0 TCP gateway with session management and rate limiting
+- `src/servers/` — Stream, Inference, and Rule MCP servers with circular JPEG buffers
+- `src/agui/` — React frontend (Vite) with dashboard and config views
 - `src/testing/testing_agent.py` — Compliance, stress, and security test runner
+- `scripts/` — Launch scripts for edge device and kiosk, systemd service file
 
 ## Deployment
 
@@ -106,3 +107,40 @@ docker run -p 9000:9000 -p 8080:8080 edge-vision-mcp
 |------|---------|
 | 8080 | Frontend + WebSocket + HTTP API |
 | 9000 | TCP MCP Gateway |
+
+## Kiosk Mode (HDMI)
+
+Launch the edge device in kiosk mode:
+
+```bash
+bash scripts/run_kiosk.sh
+```
+
+Or install as a systemd service:
+
+```bash
+sudo cp scripts/edge-vision-mcp.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now edge-vision-mcp
+```
+
+## Testing Agent
+
+The testing agent discovers the gateway via UDP broadcast and runs tests from another device on the same LAN:
+
+```bash
+bash scripts/run_tester.sh
+```
+
+Environment variables:
+- `GATEWAY_HOST` — Edge device IP (default `192.168.1.10`)
+- `OUTPUT` — Report file path (default `test-report.json`)
+
+## Troubleshooting
+
+### Tests failing with async errors
+Install pytest-asyncio matching the requirements:
+```bash
+pip install pytest-asyncio==0.23.7
+pytest tests/ -v
+```

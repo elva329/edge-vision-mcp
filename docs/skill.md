@@ -106,11 +106,12 @@ The testing agent is a separate MCP client that:
 ## AGUI Overview
 
 The Agent Graphical User Interface (AGUI) runs on the edge device:
-- **Grid View**: 4x4 live camera thumbnails refreshed at 1fps.
+- **Dashboard**: 4x4 live camera thumbnails refreshed at 1fps via WebSocket + polling.
 - **Alert Panel**: Real-time alert feed with timestamp, camera, rule, and thumbnail.
 - **Metrics**: CPU, TPU, RAM gauges; stream latency line chart.
-- **Config**: Camera enable/disable, rule editor, model selection.
+- **Config**: Camera enable/disable toggles, rule CRUD form, model list, protocol info.
 - **Protocol**: HTTP/WebSocket to local gateway; no external dependencies.
+- **Kiosk**: Auto-launch Chromium with `scripts/run_kiosk.sh` on HDMI.
 
 ## Security Considerations
 

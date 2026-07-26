@@ -31,6 +31,15 @@ def _bind_tools(gateway, server):
         gateway.register_tool(tool_name, schema, handler)
 
 
+async def get_protocol_info(args):
+    return {
+        "supported_versions": ["2025-11", "2026"],
+        "default_version": "2026",
+        "session_based_available": True,
+        "stateless_available": True,
+    }
+
+
 async def get_system_metrics(args):
     cpu = round(10 + random.uniform(-5, 15), 1)
     tpu = round(20 + random.uniform(-10, 30), 1)
@@ -43,7 +52,46 @@ async def get_system_metrics(args):
     }
 
 
-async def start_agui(gateway):
+class UDPDiscovery:
+    def __init__(self, host: str = "0.0.0.0", port: int = 9001, response_port: int = 9000):
+        self.host = host
+        self.port = port
+        self.response_port = response_port
+        self._transport = None
+
+    async def start(self):
+        loop = asyncio.get_event_loop()
+        self._transport, proto = await loop.create_datagram_endpoint(
+            lambda: self,
+            local_addr=(self.host, self.port),
+        )
+        logger.info(f"UDP discovery listening on {self.host}:{self.port}")
+
+    def connection_made(self, transport):
+        self._transport = transport
+
+    def datagram_received(self, data, addr):
+        try:
+            msg = json.loads(data)
+            if msg.get("type") == "discover" and msg.get("service") == "edge-vision-gateway":
+                response = {
+                    "type": "edge-vision-gateway",
+                    "host": addr[0],
+                    "port": self.response_port,
+                    "protocol": "mcp",
+                    "versions": ["2025-11", "2026"],
+                }
+                self._transport.sendto(json.dumps(response).encode(), addr)
+                logger.info(f"Discovery response sent to {addr}")
+        except Exception:
+            pass
+
+    def close(self):
+        if self._transport:
+            self._transport.close()
+
+
+async def start_agui(gateway, stream_server=None):
     app = web.Application()
 
     async def handle_index(request):
@@ -99,6 +147,14 @@ async def start_agui(gateway):
                         except Exception:
                             pass
 
+                    if stream_server:
+                        try:
+                            cam_id = f"cam_{random.randint(0, 15):02d}"
+                            frame = await stream_server.handle_tool("get_stream_frame", {"camera_id": cam_id})
+                            await ws.send_json({"type": "frame_update", **frame})
+                        except Exception:
+                            pass
+
                     await asyncio.sleep(1)
             except asyncio.CancelledError:
                 pass
@@ -142,6 +198,10 @@ async def run_gateway(host="0.0.0.0", port=9000, serve_agui=True):
         "description": "Get system metrics",
         "inputSchema": {"type": "object", "properties": {}, "required": []},
     }, get_system_metrics)
+    gateway.register_tool("get_protocol_info", {
+        "description": "Get supported MCP protocol versions and current session mode",
+        "inputSchema": {"type": "object", "properties": {}, "required": []},
+    }, get_protocol_info)
 
     logger.info("Starting MCP Gateway with Stream, Inference, and Rule servers")
 
@@ -149,9 +209,14 @@ async def run_gateway(host="0.0.0.0", port=9000, serve_agui=True):
     mcp_task = asyncio.create_task(mcp_server.serve_forever())
     logger.info(f"MCP TCP server listening on {host}:{port}")
 
+    await stream_server.start_background_tasks()
+
+    discovery = UDPDiscovery(host=host, response_port=port)
+    await discovery.start()
+
     agui_runner = None
     if serve_agui:
-        agui_runner = await start_agui(gateway)
+        agui_runner = await start_agui(gateway, stream_server=stream_server)
 
     try:
         await asyncio.Future()
@@ -159,6 +224,8 @@ async def run_gateway(host="0.0.0.0", port=9000, serve_agui=True):
         pass
     finally:
         mcp_task.cancel()
+        await stream_server.stop_background_tasks()
+        discovery.close()
         if agui_runner:
             await agui_runner.cleanup()
 

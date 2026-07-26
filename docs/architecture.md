@@ -88,6 +88,7 @@
   - Route `tools/call` to the appropriate server (stream, inference, rule).
   - Enforce rate limiting (1000 req/min per IP).
   - Validate all input parameters against JSON Schema before dispatching.
+  - Respond to UDP discovery broadcasts on port `9001`.
 
 ### 2.2 Stream MCP Server
 - **Camera Model**: 16 simulated cameras (`cam_00` to `cam_15`).
@@ -119,8 +120,9 @@
 
 ### 2.5 AGUI (Agent Graphical User Interface)
 - **Runtime**: HTML/CSS/JS served by a static HTTP server on port `8080`.
-- **WebSocket**: Real-time updates for alerts and metrics at 1Hz.
-- **Rendering**: Canvas API for 4x4 grid; CSS gauges for metrics.
+- **Views**: Dashboard (grid, alerts, metrics) and Config (camera toggles, rules, models, protocol info).
+- **WebSocket**: Real-time updates for alerts, metrics, and live frames at 1Hz.
+- **Rendering**: CSS Grid for 4x4 camera tiles; CSS gauges for metrics; React tabs for Config view.
 - **Deployment**: Auto-starts on boot; launches Chromium in kiosk mode on HDMI.
 
 ## 3. Data Flow

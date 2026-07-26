@@ -42,6 +42,19 @@ body {
 .status-badge.online { background: rgba(34,197,94,0.2); color: var(--success); }
 .status-badge.offline { background: rgba(239,68,68,0.2); color: var(--danger); }
 .header-right { display: flex; gap: 1rem; }
+.header-nav { display: flex; gap: 0.5rem; }
+.header-nav button {
+    padding: 0.35rem 0.75rem;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    border: 1px solid var(--surface-2);
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.header-nav button.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.header-nav button:hover:not(.active) { background: var(--surface-2); color: var(--text); }
 .metric { display: flex; flex-direction: column; align-items: flex-end; }
 .metric-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .metric-value { font-size: 0.9rem; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -171,3 +184,22 @@ body {
 .metric-bar-fill { height: 100%; background: var(--accent); transition: width 0.3s; }
 .metric-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.5rem; }
 .metric-row span:last-child { font-variant-numeric: tabular-nums; }
+
+.config-view { flex: 1; overflow-y: auto; padding: 1rem; }
+.config-section { margin-bottom: 2rem; background: var(--surface); border-radius: 0.5rem; padding: 1rem; }
+.config-section h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 1rem; }
+.config-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+.config-row { display: flex; align-items: center; gap: 1rem; background: var(--surface-2); padding: 0.6rem 0.8rem; border-radius: 0.4rem; }
+.config-id { font-weight: 600; min-width: 80px; }
+.config-type { font-size: 0.85rem; color: var(--text-muted); flex: 1; }
+.config-status { font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; text-transform: uppercase; font-weight: 600; }
+.config-status.live { background: rgba(34,211,238,0.2); color: var(--accent); }
+.config-status.off { background: rgba(148,163,184,0.2); color: var(--text-muted); }
+.config-status.active { background: rgba(34,197,94,0.2); color: var(--success); }
+.config-status.inactive { background: rgba(148,163,184,0.2); color: var(--text-muted); }
+.config-form { display: flex; flex-direction: column; gap: 0.5rem; }
+.config-form input, .config-form select {
+    background: var(--surface-2); color: var(--text); border: 1px solid var(--surface-2); border-radius: 0.35rem; padding: 0.5rem; font-size: 0.85rem;
+}
+.config-form button { padding: 0.5rem; background: var(--accent); color: var(--bg); border: none; border-radius: 0.35rem; font-weight: 600; cursor: pointer; }
+.config-form button:hover { opacity: 0.9; }

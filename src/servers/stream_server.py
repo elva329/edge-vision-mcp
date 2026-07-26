@@ -16,6 +16,26 @@ from PIL import Image
 
 logger = logging.getLogger("stream-server")
 
+class CircularJPEGBuffer:
+    def __init__(self, camera_id: str, max_frames: int = 5):
+        self.camera_id = camera_id
+        self.max_frames = max_frames
+        self._frames: list = []
+        self._lock = asyncio.Lock()
+
+    async def put(self, frame: bytes):
+        async with self._lock:
+            if len(self._frames) >= self.max_frames:
+                self._frames.pop(0)
+            self._frames.append(frame)
+
+    async def get_latest(self) -> bytes:
+        async with self._lock:
+            if not self._frames:
+                return MockJPEGGenerator.generate(self.camera_id)
+            return self._frames[-1]
+
+
 class MockJPEGGenerator:
     """Generates deterministic mock JPEG frames for cameras."""
     @staticmethod
@@ -45,6 +65,8 @@ class StreamServer:
         self.fps_limits = {"global": 120, "per_camera": 10}
         self._frame_counts: Dict[str, int] = {}
         self._last_frame_time: Dict[str, float] = {}
+        self._buffers: Dict[str, CircularJPEGBuffer] = {}
+        self._bg_tasks: list = []
         self._init_cameras()
 
     def _init_cameras(self):
@@ -60,6 +82,28 @@ class StreamServer:
             self.streaming[cam_id] = True
             self._frame_counts[cam_id] = 0
             self._last_frame_time[cam_id] = 0.0
+            self._buffers[cam_id] = CircularJPEGBuffer(cam_id, max_frames=5)
+
+    async def start_background_tasks(self):
+        for cam_id in self.cameras:
+            self._bg_tasks.append(asyncio.create_task(self._frame_producer(cam_id)))
+
+    async def stop_background_tasks(self):
+        for task in self._bg_tasks:
+            task.cancel()
+        self._bg_tasks.clear()
+
+    async def _frame_producer(self, camera_id: str):
+        while True:
+            try:
+                if self.streaming.get(camera_id, False):
+                    jpeg = MockJPEGGenerator.generate(camera_id)
+                    await self._buffers[camera_id].put(jpeg)
+                await asyncio.sleep(0.5)
+            except asyncio.CancelledError:
+                break
+            except Exception:
+                await asyncio.sleep(0.5)
 
     def get_tools(self) -> Dict[str, Any]:
         return {
@@ -135,9 +179,9 @@ class StreamServer:
         now = time.time()
         last = self._last_frame_time.get(camera_id, 0)
         if now - last < (1.0 / self.fps_limits["per_camera"]):
-            await asyncio.sleep(0.01)  # throttle
+            await asyncio.sleep(0.01)
 
-        jpeg = MockJPEGGenerator.generate(camera_id)
+        jpeg = await self._buffers[camera_id].get_latest()
         b64 = base64.b64encode(jpeg).decode("utf-8")
         self._frame_counts[camera_id] = self._frame_counts.get(camera_id, 0) + 1
         self._last_frame_time[camera_id] = time.time()

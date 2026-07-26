@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import CameraGrid from './components/CameraGrid.jsx';
 import AlertPanel from './components/AlertPanel.jsx';
 import MetricsBar from './components/MetricsBar.jsx';
+import ConfigView from './components/ConfigView.jsx';
 
 const GATEWAY_URL = '/rpc';
 const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
@@ -37,6 +38,7 @@ export default function App() {
   const [alerts, setAlerts] = useState([]);
   const [metrics, setMetrics] = useState({});
   const [connected, setConnected] = useState(false);
+  const [view, setView] = useState('dashboard');
 
   const handleWsMessage = useCallback((msg) => {
     if (msg.type === 'frame_update') {
@@ -101,6 +103,10 @@ export default function App() {
           <h1>Edge Vision MCP</h1>
           <span className={`status-badge ${connected ? 'online' : 'offline'}`}>{connected ? 'ONLINE' : 'OFFLINE'}</span>
         </div>
+        <nav className="header-nav">
+          <button className={view === 'dashboard' ? 'active' : ''} onClick={() => setView('dashboard')}>Dashboard</button>
+          <button className={view === 'config' ? 'active' : ''} onClick={() => setView('config')}>Config</button>
+        </nav>
         <div className="header-right">
           <div className="metric"><span className="metric-label">CPU</span><span className="metric-value">{metrics.cpu != null ? `${Math.round(metrics.cpu)}%` : '--'}</span></div>
           <div className="metric"><span className="metric-label">TPU</span><span className="metric-value">{metrics.tpu != null ? `${Math.round(metrics.tpu)}%` : '--'}</span></div>
@@ -109,11 +115,17 @@ export default function App() {
         </div>
       </header>
       <main className="main">
-        <CameraGrid cameras={cameras} onClip={handleClip} />
-        <aside className="sidebar">
-          <AlertPanel alerts={alerts} onAck={handleAck} onClip={handleClip} />
-          <MetricsBar metrics={metrics} />
-        </aside>
+        {view === 'dashboard' ? (
+          <>
+            <CameraGrid cameras={cameras} onClip={handleClip} />
+            <aside className="sidebar">
+              <AlertPanel alerts={alerts} onAck={handleAck} onClip={handleClip} />
+              <MetricsBar metrics={metrics} />
+            </aside>
+          </>
+        ) : (
+          <ConfigView cameras={cameras} onRefresh={() => setConnected((c) => !c)} />
+        )}
       </main>
     </div>
   );

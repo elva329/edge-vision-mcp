@@ -1,0 +1,15 @@
+[Unit]
+Description=Edge Vision MCP Gateway
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/edge-vision-mcp
+ExecStart=/usr/bin/python3 /opt/edge-vision-mcp/main.py --host 0.0.0.0 --port 9000
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
