@@ -2,6 +2,26 @@
 
 Python FastAPI backend + React AGUI frontend for simulated edge vision monitoring. 16 mock cameras, mock TPU inference, rule-based alerting.
 
+## Screenshots
+
+### Dashboard
+
+![Dashboard](screenshots/Dashboard.png)
+
+The main dashboard shows the live **4×4 camera grid** (16 mock cameras streaming one frame per second), with a **live alert panel** on the right that surfaces rule-generated events (`zone_crossing`, `object_left`) as they fire. The header displays the **metrics bar** with CPU, TPU, RAM, and the active MCP protocol version.
+
+### Config
+
+![Config](screenshots/Config.png)
+
+The **Config** view provides live control of the simulated edge device:
+
+- **Cameras** — per-camera chips with **Start/Stop** buttons that toggle streams on the fly.
+- **Rules** — the currently defined rules with their type and `On`/`Off` status.
+- **Models** — `mobilenet_v2_edge` and `yolo_nas_edge` with mocked latency ranges.
+- **Protocol** — supported MCP versions (`2025-11`, `2026`), default, and session/stateless availability.
+- **New Rule** — form to create `zone_crossing`, `loitering`, or `object_left` rules with a zone polygon and threshold.
+
 ## Prerequisites
 
 - Python 3.10+
